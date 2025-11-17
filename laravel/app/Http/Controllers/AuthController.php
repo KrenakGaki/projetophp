@@ -2,65 +2,73 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function registrar(Request $request)
+    // Registrar novo usuário
+    public function register(Request $request)
     {
-        $data = $request->validate([
-            'nome'  => 'required|string|max:255',
+        $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'senha' => 'required|string|min:6',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = User::create([
-            'name'     => $data['nome'],
-            'email'    => $data['email'],
-            'password' => bcrypt($data['senha']),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('987')->plainTextToken;
-
         return response()->json([
-            'user'  => $user,
-            'token' => $token
+            'message' => 'Usuário criado com sucesso!',
+            'user' => $user
         ], 201);
     }
 
+    // Login
     public function login(Request $request)
     {
-        $dados = $request->validate([
-            'email' => 'required|string|email',
-            'senha' => 'required|string',
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
 
-        $usuario = User::where('email', $dados ['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
-        if (!$usuario || !Hash::check($dados['senha'], $usuario->password)) {
-            return response()->json(['message'=> 'credenciais inválidas'], 401);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['As credenciais fornecidas estão incorretas.'],
+            ]);
         }
 
-        $token = $usuario->createToken('987')->plainTextToken;
+        // Criar token
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
-        'user'  => $usuario,
-        'token' => $token
-            ], 200);
-
-
-    }
-    public function perfil(Request $request)
-    {
-        return response()->json($request->user(), 200);
+            'message' => 'Login realizado com sucesso!',
+            'user' => $user,
+            'token' => $token
+        ]);
     }
 
+    // Logout
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Desconectado com sucesso'], 200);
+        return response()->json([
+            'message' => 'Logout realizado com sucesso!'
+        ]);
+    }
+
+    // Pegar usuário autenticado
+    public function me(Request $request)
+    {
+        return response()->json($request->user());
     }
 }

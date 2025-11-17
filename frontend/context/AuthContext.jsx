@@ -13,9 +13,10 @@ export function AuthProvider ({children}) {
     useEffect(() => {
         async function loadUser() {
             try {
-                const response = await api.get('/api/user');
+                const response = await api.get('/me');
                 setUser(response.data);
             } catch {
+                localStorage.removeItem('token');
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -27,7 +28,7 @@ export function AuthProvider ({children}) {
     const login = async (email, password) => {
         const data = await authService.login(email, password);
 
-        const response = await api.get('/api/user');
+        const response = await api.post('/login', {email, password});
         setUser(response.data);
 
         return response.data;

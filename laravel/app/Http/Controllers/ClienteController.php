@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Clientes;
 use Illuminate\Http\Request;
+use Ramsey\Uuid\Type\Integer;
 
 class ClienteController extends Controller
 {
@@ -22,7 +23,8 @@ class ClienteController extends Controller
     {
         $data = $request->validate([
             'nome' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:clientes,email',
+            'email' => 'nullable|email|max:255',
+            'cpf' => 'required|integer|unique:clientes,cpf',
             'telefone' => 'nullable|string|max:20',
             'endereco' => 'nullable|string|max:255',
         ]);

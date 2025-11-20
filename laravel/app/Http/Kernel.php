@@ -1,30 +1,17 @@
 <?php
-
 namespace App\Http;
-
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
     /**
      * Global HTTP middleware stack.
-     *
-     * Esses middlewares são executados em todas as requisições.
      */
     protected $middleware = [
-        // Middleware responsável pelo CORS
-        \App\Http\Middleware\HandleCors::class,
 
-        // Impede requisições durante manutenção
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
-
-        // Valida tamanho máximo de uploads
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-
-        // Remove espaços extras de strings
         \App\Http\Middleware\TrimStrings::class,
-
-        // Converte strings vazias em null
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
@@ -36,12 +23,10 @@ class Kernel extends HttpKernel
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\HandleCors::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
         'api' => [
-            // Middleware Sanctum: permite autenticação via cookie
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,

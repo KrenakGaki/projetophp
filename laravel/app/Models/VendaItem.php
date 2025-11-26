@@ -3,31 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class VendaItem extends Model
 {
+    use HasFactory;
+
+    protected $table = 'vendas_itens';
+
     protected $fillable = [
         'venda_id',
         'produto_id',
         'quantidade',
-        'preco_unitario',
-        'subtotal',
+        'preco_venda',
+        'subtotal'
     ];
-
-    protected $casts = [
-        'quantidade' => 'integer',
-        'preco_unitario' => 'decimal:2',
-        'subtotal' => 'decimal:2',
-    ];
-
-    //Link com Venda e Produto
 
     public function venda()
     {
         return $this->belongsTo(Venda::class);
     }
+
     public function produto()
     {
-        return $this->belongsTo(Produtos::class);
+        return $this->belongsTo(Produtos::class, 'produto_id');
     }
 }

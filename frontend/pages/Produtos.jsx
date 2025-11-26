@@ -7,7 +7,7 @@ import api from '../services/api';
 // Componentes Principais
 function Produtos() {
   const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState(null);
@@ -28,21 +28,33 @@ function Produtos() {
       navigate('/dashboard');
     };
 
-  const buscarProdutos = () => {
-    api.get('/produtos').then(res => setProdutos(res.data));
+const buscarProdutos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/produtos');
+      setProdutos(response.data);
+    } catch (err) {
+      console.error('Erro ao carregar produtos:', err);
+      alert('Erro ao carregar produtos');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Simulando dados iniciais para demonstração
+
   useEffect(() => {
 
     buscarProdutos();
   }, []);
 
+  //Atualizar formulário
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+
+  // Salvar produto (novo ou editado)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -54,7 +66,6 @@ function Produtos() {
 
  // Chamando dados da API
     const dadosParaEnviar = {
-      id: editando ? editando.id : crypto.randomUUID(),
       nome: formData.nome,
       descricao: formData.descricao,
       preco_venda: parseFloat(formData.preco_venda),
@@ -70,14 +81,17 @@ function Produtos() {
         } else {
           await api.post('/produtos', dadosParaEnviar);
           alert("Produto cadastrado com sucesso!"); 
+          await api.post('/produtos', dadosParaEnviar);
+          alert("Produto cadastrado com sucesso!"); 
         }
     
-        buscarProdutos();   
+        await buscarProdutos();   
         resetForm();
 
 
       } catch(error) {
         console.error('Erro ao salvar produto:', error);
+        console.error('Detalhes do erro:', error.response?.data);
         alert("Erro ao salvar produto. Tente novamente.");
       } finally {
         setLoading(false);
@@ -95,6 +109,7 @@ function Produtos() {
     setEditando(null);
   };
 
+  // Editar produto
   const handleEdit = (produto) => {
     setFormData({
       nome: produto.nome,
@@ -118,6 +133,7 @@ function Produtos() {
     }
   };
 
+  // Filtragem de produtos
   const produtosFiltrados = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,10 +142,13 @@ function Produtos() {
 
   );
 
+  // Cálculos de estatísticas
   const totalProdutos = produtos.length;
   const valorTotal = produtos.reduce((acc, p) => acc + (p.preco_venda * p.quantidade), 0);
   const estoqueTotal = produtos.reduce((acc, p) => acc + p.quantidade, 0);
 
+
+//Frontend
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center">
@@ -146,7 +165,7 @@ function Produtos() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
-      {/* Header Premium */}
+      {/* Header*/}
       <div className="bg-white shadow-lg border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

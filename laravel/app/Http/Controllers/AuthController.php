@@ -16,20 +16,25 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'type' => 'required|in:admin,user',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'type' => $request->type,
         ]);
+
+        // Criar token
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Usuário criado com sucesso!',
-            'user' => $user
-        ], 201);
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
-
     // Login
     public function login(Request $request)
     {
@@ -52,7 +57,8 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login realizado com sucesso!',
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'type' => $user->type,
         ]);
     }
 
@@ -69,6 +75,7 @@ class AuthController extends Controller
     // Pegar usuário autenticado
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json(
+            $request->user());
     }
 }

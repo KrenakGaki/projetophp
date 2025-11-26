@@ -7,45 +7,74 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ClienteController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// ============================================
+// ROTAS PÚBLICAS
+// ============================================
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-
-Route::get('/produtos', [ProdutoController::class, 'index']);
-Route::post('/produtos', [ProdutoController::class, 'store']);
-Route::get('/produtos/{id}', [ProdutoController::class, 'show']);
-Route::put('/produtos/{id}', [ProdutoController::class, 'update']);
-Route::delete('/produtos/{id}', [ProdutoController::class, 'destroy']);
-
-
-// routes/web.php
-Route::get('/sanctum/csrf-cookie', function () {
-    return response()->json(['csrf' => csrf_token()]);
-});
-
-
-// Vendas
-Route::get('/vendas', [VendaController::class, 'index']);
-Route::post('/vendas', [VendaController::class, 'store']);
-Route::get('/vendas/{id}', [VendaController::class, 'show']);
-Route::delete('/vendas/{id}', [VendaController::class, 'destroy']);
-
-
-// Clientes
-Route::get('/clientes', [ClienteController::class, 'index']);
-Route::post('/clientes', [ClienteController::class, 'store']);
-Route::get('/clientes/{id}', [ClienteController::class, 'show']);
-Route::put('/clientes/{id}', [ClienteController::class, 'update']);
-Route::delete('/clientes/{id}', [ClienteController::class, 'destroy']);
-
-// Rotas de autenticação
-Route::Post('/register', [App\Http\Controllers\AuthController::class, 'register']);
-Route::Post('/login', [App\Http\Controllers\AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->get('/perfil', [App\Http\Controllers\AuthController::class, 'perfil']);
-
-// Rotas protegidas
+// ============================================
+// ROTAS PROTEGIDAS (AUTENTICADAS)
+// ============================================
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Autenticar usuário
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Produtos
+    Route::get('/produtos', [ProdutoController::class, 'index']);
+    Route::post('/produtos', [ProdutoController::class, 'store']);
+    Route::get('/produtos/{id}', [ProdutoController::class, 'show']);
+    Route::put('/produtos/{id}', [ProdutoController::class, 'update']);
+    Route::delete('/produtos/{id}', [ProdutoController::class, 'destroy']);
+
+    // Vendas
+    Route::get('/vendas', [VendaController::class, 'index']);
+    Route::post('/vendas', [VendaController::class, 'store']);
+    Route::get('/vendas/{id}', [VendaController::class, 'show']);
+    Route::delete('/vendas/{id}', [VendaController::class, 'destroy']);
+
+    // Clientes
+    Route::get('/clientes', [ClienteController::class, 'index']);
+    Route::post('/clientes', [ClienteController::class, 'store']);
+    Route::get('/clientes/{id}', [ClienteController::class, 'show']);
+    Route::put('/clientes/{id}', [ClienteController::class, 'update']);
+    Route::delete('/clientes/{id}', [ClienteController::class, 'destroy']);
+
+    // Dashboard do Usuário
+    Route::get('/user/dashboard', function (Request $request) {
+        return response()->json([
+            'message' => 'Bem-vindo ao dashboard!',
+            'user' => $request->user(),
+        ]);
+    });
+
+    Route::middleware('admin')->group(function () {
+
+        // Dashboard Admin
+        Route::get('/admin/dashboard', function (Request $request) {
+            return response()->json([
+                'message' => 'Bem-vindo ao dashboard de administração!',
+                'user' => $request->user(),
+            ]);
+        });
+
+        // Gerenciar Usuários
+        Route::get('/usuarios', function () {
+            return response()->json(\App\Models\User::all());
+        });
+
+        Route::get('/usuarios/{id}', function ($id) {
+            return response()->json(\App\Models\User::findOrFail($id));
+        });
+
+        Route::delete('/usuarios/{id}', function ($id) {
+            $user = \App\Models\User::findOrFail($id);
+            $user->delete();
+            return response()->json(['message' => 'Usuário deletado com sucesso.']);
+        });
+
+
+    });
 });

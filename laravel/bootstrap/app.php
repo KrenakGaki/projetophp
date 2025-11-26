@@ -12,11 +12,18 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
+
     ->withMiddleware(function (Middleware $middleware): void {
-        // Ativa o suporte a API stateful (para o Sanctum funcionar corretamente)
+        // Suporte da API
         $middleware->api(prepend: [EnsureFrontendRequestsAreStateful::class]);
+
+        // Registro do middleware
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\CheckAdmin::class,
+        ]);
     })
+
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Aqui você pode tratar exceções personalizadas se quiser
+        // Vazio por enquanto
     })
     ->create();

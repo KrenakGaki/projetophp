@@ -155,7 +155,7 @@ return (
 
             {/* Acesso Rápido */}
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Acesso Rápido</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
             <button
                 onClick={() => navigate('/vendas')}
@@ -186,19 +186,10 @@ return (
 
             <button
                 onClick={() => alert('Em desenvolvimento')}
-                className="bg-gradient-to-br from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 flex flex-col items-center"
-            >
-                <Settings className="w-12 h-12 mb-3" />
-                <p className="font-bold text-lg">Configurações</p>
-                <p className="text-sm opacity-90">Em breve</p>
-            </button>
-
-            <button
-                onClick={() => alert('Em desenvolvimento')}
                 className="bg-gradient-to-br from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 flex flex-col items-center"
             >
                 <FileText className="w-12 h-12 mb-3" />
-                <p className="font-bold text-lg">Relatórios</p>
+                <p className="font-bold text-lg">Usuários</p>
                 <p className="text-sm opacity-90">Em breve</p>
             </button>
 

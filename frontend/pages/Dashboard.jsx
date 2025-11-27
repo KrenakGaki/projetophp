@@ -16,7 +16,7 @@ function Dashboard() {
     //Armazenar dados
     const [clientes, setClientes] = useState([]);
     const [produtos, setProdutos] = useState([]);
-
+    const [vendas, setVendas] = useState([]);
 
 
     console.log('Usuário:', user);
@@ -34,10 +34,12 @@ function Dashboard() {
                 const[resClientes, resProdutos, resVendas] = await Promise.all([
                     api.get('/clientes'),
                     api.get('/produtos'),
+                    api.get('/vendas'),
                 ]);
 
                 setClientes(resClientes.data);
                 setProdutos(resProdutos.data);
+                setVendas(resVendas.data);
             }
         catch (error) {
             console.error('Erro ao carregar dados', error);
@@ -52,6 +54,7 @@ function Dashboard() {
     //Contagem
     const totalClientes = clientes.length;
     const totalProdutos = produtos.length;
+    const totalVendas = vendas.length;
 
 
     
@@ -144,7 +147,7 @@ return (
                 <div className="flex items-center justify-between">
                 <div>
                     <p className="text-sm text-gray-600 font-medium">Vendas Hoje</p>
-                    <p className="text-3xl font-bold text-gray-800">45</p>
+                    <p className="text-3xl font-bold text-gray-800">{totalVendas}</p>
                 </div>
                 <div className="p-4 bg-green-100 rounded-xl">
                     <ShoppingCart className="w-10 h-10 text-green-600" />

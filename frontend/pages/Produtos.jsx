@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Package, Edit2, Trash2, X, Search, TrendingUp, AlertCircle, ArrowLeftCircle } from "lucide-react";
 import api from '../services/api';
 
-// Componentes Principais
 function Produtos() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,17 +17,13 @@ function Produtos() {
     nome: "",
     descricao: "",
     quantidade: "",
+    preco_custo: "",
     preco_venda: "",
   });
 
-  // Voltar ao Dashboard
   const navigate = useNavigate();
 
-    const voltarAoDashboard = () => {
-      navigate('/dashboard');
-    };
-
-const buscarProdutos = async () => {
+  const buscarProdutos = async () => {
     try {
       setLoading(true);
       const response = await api.get('/produtos');
@@ -41,33 +36,28 @@ const buscarProdutos = async () => {
     }
   };
 
-
   useEffect(() => {
-
     buscarProdutos();
   }, []);
 
-  //Atualizar formulário
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-
-  // Salvar produto (novo ou editado)
+  // CORRIGIDO: Removida duplicação
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.nome || !formData.preco_venda || !formData.quantidade) {
+    if (!formData.nome || !formData.preco_venda || !formData.preco_custo || !formData.quantidade) {
       alert("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
-
- // Chamando dados da API
     const dadosParaEnviar = {
       nome: formData.nome,
       descricao: formData.descricao,
+      preco_custo: parseFloat(formData.preco_custo),
       preco_venda: parseFloat(formData.preco_venda),
       quantidade: parseInt(formData.quantidade),
     };
@@ -75,27 +65,24 @@ const buscarProdutos = async () => {
     try {
       setLoading(true);
 
-        if (editando) {
-          await api.put(`/produtos/${editando.id}`, dadosParaEnviar);
-          alert("Produto atualizado com sucesso!");
-        } else {
-          await api.post('/produtos', dadosParaEnviar);
-          alert("Produto cadastrado com sucesso!"); 
-          await api.post('/produtos', dadosParaEnviar);
-          alert("Produto cadastrado com sucesso!"); 
-        }
-    
-        await buscarProdutos();   
-        resetForm();
-
-
-      } catch(error) {
-        console.error('Erro ao salvar produto:', error);
-        console.error('Detalhes do erro:', error.response?.data);
-        alert("Erro ao salvar produto. Tente novamente.");
-      } finally {
-        setLoading(false);
+      if (editando) {
+        await api.put(`/produtos/${editando.id}`, dadosParaEnviar);
+        alert("Produto atualizado com sucesso!");
+      } else {
+        await api.post('/produtos', dadosParaEnviar);
+        alert("Produto cadastrado com sucesso!");
       }
+
+      await buscarProdutos();
+      resetForm();
+
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error);
+      console.error('Detalhes do erro:', error.response?.data);
+      alert("Erro ao salvar produto. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
@@ -103,18 +90,19 @@ const buscarProdutos = async () => {
       nome: "",
       descricao: "",
       quantidade: "",
+      preco_custo: "",
       preco_venda: "",
     });
     setShowModal(false);
     setEditando(null);
   };
 
-  // Editar produto
   const handleEdit = (produto) => {
     setFormData({
       nome: produto.nome,
       descricao: produto.descricao || "",
       quantidade: produto.quantidade.toString(),
+      preco_custo: Number(produto.preco_custo).toFixed(2),
       preco_venda: Number(produto.preco_venda).toFixed(2),
     });
     setEditando(produto);
@@ -133,13 +121,10 @@ const buscarProdutos = async () => {
     }
   };
 
-  // Filtragem de produtos
   const produtosFiltrados = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    produto.categoria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    produto.preco_venda?.toLowerCase().includes(searchTerm.toLowerCase())
-
+    produto.categoria?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Cálculos de estatísticas
@@ -147,8 +132,15 @@ const buscarProdutos = async () => {
   const valorTotal = produtos.reduce((acc, p) => acc + (p.preco_venda * p.quantidade), 0);
   const estoqueTotal = produtos.reduce((acc, p) => acc + p.quantidade, 0);
 
+  //Formatar valor
+  const formatarReal = (valorReal) => {
+  return 'R$ ' + Number(valorReal).toLocaleString('pt-BR', { 
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
 
-//Frontend
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 flex items-center justify-center">
@@ -181,11 +173,11 @@ const buscarProdutos = async () => {
               </div>
             </div>
             <button
-                  onClick={() => navigate('/dashboard')}
-                  className="fixed top-5 left-5 z-50 flex items-center gap-2.5 bg-white border-2 border-gray-300 text-gray-800 px-5 py-3 rounded-2xl font-bold shadow-xl hover:shadow-2xl hover:border-gray-400 hover:bg-gray-50 transform hover:scale-110 transition-all duration-300 group"
-                >
-                  <ArrowLeftCircle className="w-7 h-7 text-blue-600 group-hover:text-blue-700 transition-colors" />
-                  <span className="hidden sm:block">Dashboard</span>
+              onClick={() => navigate('/dashboard')}
+              className="fixed top-5 left-5 z-50 flex items-center gap-2.5 bg-white border-2 border-gray-300 text-gray-800 px-5 py-3 rounded-2xl font-bold shadow-xl hover:shadow-2xl hover:border-gray-400 hover:bg-gray-50 transform hover:scale-110 transition-all duration-300 group"
+            >
+              <ArrowLeftCircle className="w-7 h-7 text-blue-600 group-hover:text-blue-700 transition-colors" />
+              <span className="hidden sm:block">Dashboard</span>
             </button>
             <button
               onClick={() => setShowModal(true)}
@@ -217,7 +209,7 @@ const buscarProdutos = async () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 font-medium mb-1">Valor Total</p>
-                <p className="text-3xl font-bold text-gray-800">R$ {valorTotal.toFixed(2)}</p>
+                <p className="text-3xl font-bold text-gray-800">{formatarReal(valorTotal)}</p>
               </div>
               <div className="p-4 bg-green-100 rounded-xl">
                 <TrendingUp className="w-8 h-8 text-green-600" />
@@ -311,17 +303,23 @@ const buscarProdutos = async () => {
                   )}
                   
                   <div className="space-y-3 mb-4">
+                    <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                      <span className="text-gray-600 text-sm font-medium">Custo:</span>
+                      <span className="font-bold text-lg text-blue-600">
+                        {produto.preco_custo
+                          ? `R$ ${Number(produto.preco_custo).toFixed(2).replace('.', ',')}`
+                          : 'Não definido'}
+                      </span>
+                    </div>
                     <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
-                      <span className="text-gray-600 text-sm font-medium">Preço:</span>
-                      <span
-                          className={`font-bold text-lg ${
-                            produto.preco_venda ? 'text-green-600' : 'text-gray-700'
-                          }`}
-                        >
-                          {produto.preco_venda
-                            ? `R$ ${Number(produto.preco_venda).toFixed(2).replace('.', ',')}`
-                            : 'Não definido'}
-                        </span>
+                      <span className="text-gray-600 text-sm font-medium">Venda:</span>
+                      <span className={`font-bold text-lg ${
+                        produto.preco_venda ? 'text-green-600' : 'text-gray-700'
+                      }`}>
+                        {produto.preco_venda
+                          ? `R$ ${Number(produto.preco_venda).toFixed(2).replace('.', ',')}`
+                          : 'Não definido'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                       <span className="text-gray-600 text-sm font-medium">Estoque:</span>
@@ -329,6 +327,14 @@ const buscarProdutos = async () => {
                         {produto.quantidade} un
                       </span>
                     </div>
+                    {produto.preco_custo && produto.preco_venda && (
+                      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200">
+                        <span className="text-gray-600 text-sm font-medium">Margem:</span>
+                        <span className="font-bold text-lg text-yellow-700">
+                          {((produto.preco_venda - produto.preco_custo) / produto.preco_custo * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {(produto.categoria || produto.fornecedor) && (
@@ -406,7 +412,24 @@ const buscarProdutos = async () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Preço (R$) *
+                    Preço de Custo (R$) *
+                  </label>
+                  <input
+                    type="number"
+                    name="preco_custo"
+                    value={formData.preco_custo}
+                    onChange={handleInputChange}
+                    required
+                    step="0.01"
+                    min="0"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Preço de Venda (R$) *
                   </label>
                   <input
                     type="number"
@@ -420,22 +443,22 @@ const buscarProdutos = async () => {
                     placeholder="0.00"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Quantidade *
-                  </label>
-                  <input
-                    type="number"
-                    name="quantidade"
-                    value={formData.quantidade}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    placeholder="0"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Quantidade *
+                </label>
+                <input
+                  type="number"
+                  name="quantidade"
+                  value={formData.quantidade}
+                  onChange={handleInputChange}
+                  required
+                  min="0"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  placeholder="0"
+                />
               </div>
 
               <div className="flex gap-3 pt-6">
@@ -448,9 +471,10 @@ const buscarProdutos = async () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105"
+                  disabled={loading}
+                  className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editando ? "Atualizar" : "Cadastrar"}
+                  {loading ? 'Salvando...' : editando ? 'Atualizar' : 'Cadastrar'}
                 </button>
               </div>
             </form>

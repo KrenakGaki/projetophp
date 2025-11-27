@@ -24,7 +24,8 @@ class ProdutoController extends Controller
         $data = $request->validate([
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string',
-            'preco' => 'required|numeric|min:0',
+            'preco_custo' => 'required|numeric|min:0',
+            'preco_venda' => 'required|numeric|min:0',
             'quantidade' => 'required|integer|min:0',
         ]);
         $produto = Produtos::create($data);
@@ -56,7 +57,8 @@ class ProdutoController extends Controller
         $data = $request->validate([
             'nome' => 'sometimes|string|max:255',
             'descricao' => 'sometimes|nullable|string',
-            'preco' => 'sometimes|numeric|min:0',
+            'preco_custo' => 'sometimes|numeric|min:0',
+            'preco_venda' => 'sometimes|numeric|min:0',
             'quantidade' => 'sometimes|integer|min:0',
         ]);
 
